@@ -55,7 +55,7 @@ type Exporter struct {
 }
 
 func fetchStorcliOutput() (resp Response, err error) {
-	output, err := exec.Command(*argStorcliPath, "/c0", "show", "all", "J").Output()
+	output, err := exec.Command(*argStorcliPath, "/call", "show", "all", "J").Output()
 	if err != nil {
 		return Response{}, fmt.Errorf("Failed to execute command: %s", err)
 	}
