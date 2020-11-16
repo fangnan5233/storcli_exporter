@@ -1,0 +1,13 @@
+[Unit]
+Description=Prometheus StorCLI Exporter Service
+After=network.target
+
+[Service]
+ExecStart=/opt/storcli_exporter/storcli_exporter
+User=root
+Group=root
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
