@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os/exec"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -27,20 +26,20 @@ type Response struct {
 		ResponseData struct {
 			VirtualDrives int `json:"Virtual Drives"`
 			VDLIST        []struct {
-				DGVD  string `json:"DG/VD"`
-				TYPE  string `json:"TYPE"`
-				State string `json:"State"`
-				Size  string `json:"Size"`
+				Position string `json:"DG/VD"`
+				Type     string `json:"TYPE"`
+				State    string `json:"State"`
+				Size     string `json:"Size"`
 			} `json:"VD LIST"`
 			PhysicalDrives int `json:"Physical Drives"`
 			PDLIST         []struct {
-				EIDSlt string `json:"EID:Slt"`
-				DID    int    `json:"DID"`
-				State  string `json:"State"`
-				Size   string `json:"Size"`
-				Med    string `json:"Med"`
-				Model  string `json:"Model"`
-				Type   string `json:"Type"`
+				Device   int    `json:"DID"`
+				Position string `json:"EID:Slt"`
+				State    string `json:"State"`
+				Media    string `json:"Med"`
+				Model    string `json:"Model"`
+				Size     string `json:"Size"`
+				Type     string `json:"Type"`
 			} `json:"PD LIST"`
 		} `json:"Response Data"`
 	} `json:"Controllers"`
@@ -69,11 +68,11 @@ func fetchStorcliOutput() (resp Response, err error) {
 
 func NewExporter() *Exporter {
 	return &Exporter{
-		scrapeSuccess:       prometheus.NewDesc(prometheus.BuildFQName(*argMetricsPrefix, "", "scrape_success"), "Was the last scrape of StorCLI successfull.", nil, nil),
-		virtualDriveCount:   prometheus.NewDesc(prometheus.BuildFQName(*argMetricsPrefix, "", "virtual_drive_count"), "Count of available Virtual Drives.", []string{"controller"}, nil),
-		physicalDriveCount:  prometheus.NewDesc(prometheus.BuildFQName(*argMetricsPrefix, "", "physical_drive_count"), "Count of available Physical Drives.", []string{"controller"}, nil),
-		virtualDriveStatus:  prometheus.NewDesc(prometheus.BuildFQName(*argMetricsPrefix, "", "virtual_drive_status"), "Status of the Virtual Drive.", []string{"controller", "slot", "type", "size", "state"}, nil),
-		physicalDriveStatus: prometheus.NewDesc(prometheus.BuildFQName(*argMetricsPrefix, "", "physical_drive_status"), "Status of the Physical Drive.", []string{"controller", "enclosure", "device", "model", "state", "media", "slot", "size"}, nil),
+		scrapeSuccess:       ScrapeSuccess,
+		virtualDriveCount:   VirtualDrivesCount,
+		physicalDriveCount:  PhysicalDrivesCount,
+		virtualDriveStatus:  VirtualDriveStatus,
+		physicalDriveStatus: PhysicalDriveStatus,
 	}
 }
 
@@ -95,24 +94,17 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(e.virtualDriveCount, prometheus.GaugeValue, float64(controller.ResponseData.VirtualDrives), strconv.Itoa(controllerNumber))
 		ch <- prometheus.MustNewConstMetric(e.physicalDriveCount, prometheus.GaugeValue, float64(controller.ResponseData.PhysicalDrives), strconv.Itoa(controllerNumber))
 		for _, virtualDrive := range controller.ResponseData.VDLIST {
-			var value float64
-			if virtualDrive.State == "Optl" {
-				value = 1.0
-			} else {
-				value = 0.0
-			}
-			ch <- prometheus.MustNewConstMetric(e.virtualDriveStatus, prometheus.GaugeValue, value, strconv.Itoa(controllerNumber), virtualDrive.DGVD, virtualDrive.TYPE, virtualDrive.Size, virtualDrive.State)
+			ch <- prometheus.MustNewConstMetric(
+				e.virtualDriveStatus, prometheus.GaugeValue, 1.0,
+				strconv.Itoa(controllerNumber), virtualDrive.Position, virtualDrive.Type, virtualDrive.Size, virtualDrive.State,
+			)
 		}
 		for _, physicalDrive := range controller.ResponseData.PDLIST {
-			eidslt := strings.Split(physicalDrive.EIDSlt, ":")
-			enclosure, slot := eidslt[0], eidslt[1]
-			var value float64
-			if physicalDrive.State == "Onln" {
-				value = 1.0
-			} else {
-				value = 0.0
-			}
-			ch <- prometheus.MustNewConstMetric(e.physicalDriveStatus, prometheus.GaugeValue, value, strconv.Itoa(controllerNumber), enclosure, strconv.Itoa(physicalDrive.DID), physicalDrive.Model, physicalDrive.State, physicalDrive.Med, slot, physicalDrive.Size)
+			ch <- prometheus.MustNewConstMetric(
+				e.physicalDriveStatus, prometheus.GaugeValue, 1.0,
+				strconv.Itoa(controllerNumber), physicalDrive.Position, strconv.Itoa(physicalDrive.Device), physicalDrive.Model,
+				physicalDrive.State, physicalDrive.Media, physicalDrive.Size,
+			)
 		}
 	}
 }
