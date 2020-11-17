@@ -34,7 +34,8 @@ var (
 		nil,
 	)
 	// PhysicalDriveStatus returns new Prometheus metric description
-	PhysicalDriveStatus = prometheus.NewDesc(prometheus.BuildFQName(*argMetricsPrefix, "", "physical_drive_status"),
+	PhysicalDriveStatus = prometheus.NewDesc(
+		prometheus.BuildFQName(*argMetricsPrefix, "", "physical_drive_status"),
 		"Status of the Physical Drive.",
 		[]string{
 			"controller", "slot", "device", "model",
