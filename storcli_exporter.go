@@ -21,6 +21,7 @@ var (
 	argListenAddress = flag.String("listen_address", ":9326", "Listen address for this exporter. By default ':9326'.")
 )
 
+// Response is the response we fetch from StorCLI/PercCLI command output
 type Response struct {
 	Controllers []struct {
 		ResponseData struct {
@@ -45,6 +46,7 @@ type Response struct {
 	} `json:"Controllers"`
 }
 
+// Exporter is struct defining StorCLI/PercCLI exporter
 type Exporter struct {
 	physicalDriveStatus *prometheus.Desc
 	virtualDriveStatus  *prometheus.Desc
@@ -66,6 +68,7 @@ func fetchStorcliOutput() (resp Response, err error) {
 	return response, nil
 }
 
+// NewExporter creates a new object of type Exporter
 func NewExporter() *Exporter {
 	return &Exporter{
 		scrapeSuccess:       ScrapeSuccess,
@@ -76,6 +79,7 @@ func NewExporter() *Exporter {
 	}
 }
 
+// Describe describes the Prometheus metrics
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- e.physicalDriveStatus
 	ch <- e.virtualDriveStatus
@@ -84,6 +88,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- e.scrapeSuccess
 }
 
+// Collect collects the Prometheus metrics
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	response, err := fetchStorcliOutput()
 	if err != nil {
