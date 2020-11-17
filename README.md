@@ -36,12 +36,12 @@ Exporter metrics for Prometheus
 storcli_physical_drive_count{controller="0"} 6
 # HELP storcli_physical_drive_status Status of the Physical Drive.
 # TYPE storcli_physical_drive_status gauge
-storcli_physical_drive_status{controller="0",device="0",enclosure="252",media="HDD",model="ST4000NM0035-1V4107",size="3.637 TB",slot="0",state="Onln"} 1
-storcli_physical_drive_status{controller="0",device="1",enclosure="252",media="HDD",model="ST4000NM0035-1V4107",size="3.637 TB",slot="1",state="Onln"} 1
-storcli_physical_drive_status{controller="0",device="4",enclosure="252",media="SSD",model="Samsung SSD 860 PRO 1TB",size="953.343 GB",slot="5",state="Onln"} 1
-storcli_physical_drive_status{controller="0",device="5",enclosure="252",media="SSD",model="Samsung SSD 860 PRO 1TB",size="953.343 GB",slot="4",state="Onln"} 1
-storcli_physical_drive_status{controller="0",device="6",enclosure="252",media="HDD",model="ST4000NM0035-1V4107",size="3.637 TB",slot="2",state="Onln"} 1
-storcli_physical_drive_status{controller="0",device="7",enclosure="252",media="HDD",model="ST4000NM0035-1V4107",size="3.637 TB",slot="3",state="Onln"} 1
+storcli_physical_drive_status{controller="0",device="0",media="HDD",model="ST4000NM0035-1V4107",size="3.637 TB",slot="252:0",state="Onln"} 1
+storcli_physical_drive_status{controller="0",device="1",media="HDD",model="ST4000NM0035-1V4107",size="3.637 TB",slot="252:1",state="Onln"} 1
+storcli_physical_drive_status{controller="0",device="4",media="SSD",model="Samsung SSD 860 PRO 1TB",size="953.343 GB",slot="252:5",state="Onln"} 1
+storcli_physical_drive_status{controller="0",device="5",media="SSD",model="Samsung SSD 860 PRO 1TB",size="953.343 GB",slot="252:4",state="Onln"} 1
+storcli_physical_drive_status{controller="0",device="6",media="HDD",model="ST4000NM0035-1V4107",size="3.637 TB",slot="252:2",state="Onln"} 1
+storcli_physical_drive_status{controller="0",device="7",media="HDD",model="ST4000NM0035-1V4107",size="3.637 TB",slot="252:3",state="Onln"} 1
 # HELP storcli_virtual_drive_count Count of available Virtual Drives.
 # TYPE storcli_virtual_drive_count gauge
 storcli_virtual_drive_count{controller="0"} 2
