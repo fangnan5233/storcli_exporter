@@ -42,6 +42,17 @@ type Response struct {
 				Size     string `json:"Size"`
 				Type     string `json:"Type"`
 			} `json:"PD LIST"`
+			DriveGroups  int `json:"Drive Groups"`
+			TOPOLOGYLIST []struct {
+				DiskGroup int         `json:"DG"`
+				Array     interface{} `json:"Arr"`
+				Row       interface{} `json:"Row"`
+				Position  string      `json:"EID:Slot"`
+				Device    interface{} `json:"DID"`
+				State     string      `json:"State"`
+				Size      string      `json:"Size"`
+				Type      string      `json:"Type"`
+			} `json:"TOPOLOGY"`
 		} `json:"Response Data"`
 	} `json:"Controllers"`
 }
@@ -52,6 +63,8 @@ type Exporter struct {
 	virtualDriveStatus  *prometheus.Desc
 	physicalDriveCount  *prometheus.Desc
 	virtualDriveCount   *prometheus.Desc
+	driveGroupsCount    *prometheus.Desc
+	topologyStatus      *prometheus.Desc
 	scrapeSuccess       *prometheus.Desc
 }
 
@@ -76,6 +89,8 @@ func NewExporter() *Exporter {
 		physicalDriveCount:  PhysicalDrivesCount,
 		virtualDriveStatus:  VirtualDriveStatus,
 		physicalDriveStatus: PhysicalDriveStatus,
+		driveGroupsCount:    DriveGroupsCount,
+		topologyStatus:      TopologyStatus,
 	}
 }
 
@@ -85,6 +100,8 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- e.virtualDriveStatus
 	ch <- e.physicalDriveCount
 	ch <- e.virtualDriveCount
+	ch <- e.driveGroupsCount
+	ch <- e.topologyStatus
 	ch <- e.scrapeSuccess
 }
 
@@ -98,6 +115,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	for controllerNumber, controller := range response.Controllers {
 		ch <- prometheus.MustNewConstMetric(e.virtualDriveCount, prometheus.GaugeValue, float64(controller.ResponseData.VirtualDrives), strconv.Itoa(controllerNumber))
 		ch <- prometheus.MustNewConstMetric(e.physicalDriveCount, prometheus.GaugeValue, float64(controller.ResponseData.PhysicalDrives), strconv.Itoa(controllerNumber))
+		ch <- prometheus.MustNewConstMetric(e.driveGroupsCount, prometheus.GaugeValue, float64(controller.ResponseData.DriveGroups), strconv.Itoa(controllerNumber))
 		for _, virtualDrive := range controller.ResponseData.VDLIST {
 			ch <- prometheus.MustNewConstMetric(
 				e.virtualDriveStatus, prometheus.GaugeValue, 1.0,
@@ -109,6 +127,13 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 				e.physicalDriveStatus, prometheus.GaugeValue, 1.0,
 				strconv.Itoa(controllerNumber), physicalDrive.Position, strconv.Itoa(physicalDrive.Device), physicalDrive.Model,
 				physicalDrive.State, physicalDrive.Media, physicalDrive.Size,
+			)
+		}
+		for _, topology := range controller.ResponseData.TOPOLOGYLIST {
+			ch <- prometheus.MustNewConstMetric(
+				e.topologyStatus, prometheus.GaugeValue, 1.0,
+				strconv.Itoa(controllerNumber), topology.Position, strconv.Itoa(topology.DiskGroup), fmt.Sprint(topology.Array),
+				fmt.Sprint(topology.Row), fmt.Sprint(topology.Device), topology.State, topology.Type, topology.Size,
 			)
 		}
 	}

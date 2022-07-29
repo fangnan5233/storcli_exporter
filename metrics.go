@@ -43,4 +43,23 @@ var (
 		},
 		nil,
 	)
+
+	// Drive Groups Count returns new Prometheus metric description
+	DriveGroupsCount = prometheus.NewDesc(
+		prometheus.BuildFQName(*argMetricsPrefix, "", "drive_groups_count"),
+		"Count of available Drive Groups.",
+		[]string{"controller"},
+		nil,
+	)
+
+	// TopologyStatus returns new Prometheus metric description
+	TopologyStatus = prometheus.NewDesc(
+		prometheus.BuildFQName(*argMetricsPrefix, "", "topology_status"),
+		"Status of the topology.",
+		[]string{
+			"controller", "slot", "disk_group", "array", "row", "device",
+			"state", "type", "size",
+		},
+		nil,
+	)
 )
